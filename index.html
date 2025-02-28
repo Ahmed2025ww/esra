@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/jpeg" href="https://cdn-icons-png.flaticon.com/128/15043/15043568.png">
   <title>القرآن الكريم إهداء إلى فقيدة الشباب إسراء السيد السعيد </title>
-  <!-- تضمين الخطوط: Lateef للنصوص العامة، Cairo لقائمة السور، Amiri للآيات والتاريخ -->
+  <!-- تضمين الخطوط: Lateef للنصوص العامة، Cairo لقائمة السور، Amiri للتاريخ (يُستخدم في أقسام أخرى) -->
   <link href="https://fonts.googleapis.com/css2?family=Lateef&family=Cairo&family=Amiri&display=swap" rel="stylesheet">
   <!-- مكتبة الأيقونات و animate.css -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -299,7 +299,7 @@
       to { opacity: 1; }
     }
     .ayah-block {
-      font-family: 'Amiri', serif;
+      font-family: 'Lateef', serif;
       font-size: var(--ayah-font-size);
       line-height: 1.8;
       letter-spacing: 0;
@@ -677,15 +677,17 @@
             100% { transform: scale(1); opacity: 1; }
           }
           #conclusion-content #ayahs-content {
-            font-size: 1.8rem;
-            line-height: 2.2;
+            font-family: 'Lateef', serif;
+            font-size: var(--ayah-font-size);
+            line-height: 1.8;
+            letter-spacing: 0;
+            text-align: justify;
             height: 90vh;
             width: 100%;
             margin: 0 auto;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 15px;
-            text-align: justify;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -1461,10 +1463,11 @@
         { name: "الفلق", number: "113" },
         { name: "الناس", number: "114" }
       ];
-      surahs.sort(function(a, b) { return parseInt(a.number) - parseInt(b.number); });
-      window.globalSurahList = surahs;
+      // إضافة زر العودة إلى قائمة الشيوخ في أعلى القائمة
       const surahList = document.getElementById("surah-list");
-      surahList.innerHTML = surahs.map(function(surah) {
+      surahList.innerHTML = `
+          <button class="back-btn" onclick="backToTilaawaList()">عودة إلى قائمة الشيوخ</button>
+      ` + surahs.map(function(surah) {
         return `
           <div class="surah-item animate__animated animate__fadeIn" onclick="playTilaawa(${parseInt(surah.number,10)})">
             <span class="tilawah-surah-number">${surah.number}</span>
@@ -1639,86 +1642,44 @@
     }
     function showPrayerDetail(prayerName, time) {
       Swal.fire({
-        title: "تفاصيل الصلاة - " + prayerName,
-        html: "<p style=\"font-size: 18px;\">الوقت: " + time + "</p>",
-        showConfirmButton: true,
-        customClass: { popup: "animate__animated animate__fadeInDown" }
+        title: "تفاصيل الصلاة",
+        html: `<h3>${prayerName}</h3><p>الوقت: ${time}</p>`,
+        confirmButtonText: "حسناً"
       });
     }
-    function showLoadingOverlay() {
-      document.getElementById("loading-overlay").classList.remove("hidden");
-    }
+    
+    // يتم استدعاء hideLoadingOverlay() في حال انتهاء تحميل البيانات
     function hideLoadingOverlay() {
-      document.getElementById("loading-overlay").classList.add("hidden");
-    }
-    function showSection(sectionId, element) {
-      const currentSection = document.querySelector(".section.active-section");
-      document.querySelectorAll(".nav-item").forEach(function(i) { i.classList.remove("active"); });
-      element.classList.add("active");
-      if (currentSection) {
-        currentSection.classList.add("animate__animated", "animate__fadeOut");
-        setTimeout(function() {
-          currentSection.classList.remove("active-section", "animate__animated", "animate__fadeOut");
-          const newSection = document.getElementById(sectionId);
-          newSection.classList.add("active-section", "animate__animated", "animate__fadeIn");
-          if (sectionId === "quran-section") showSurahMenu();
-          if (sectionId === "prayer-section") showPrayerTimes();
-          if (sectionId === "tilaawa-section") {
-            document.getElementById("reciters-container").style.display = "grid";
-            document.getElementById("surah-list").style.display = "none";
-            document.getElementById("tilaawa-detail").style.display = "none";
-          }
-          if (sectionId === "khatma-section") {
-            if (!userName) {
-              Swal.fire({
-                title: "ادخل اسمك",
-                input: "text",
-                inputAttributes: { autocapitalize: "words" },
-                confirmButtonText: "تأكيد",
-                allowOutsideClick: false,
-                preConfirm: function(name) {
-                  if (!name.trim()) {
-                    Swal.showValidationMessage("الاسم مطلوب");
-                    return false;
-                  }
-                  return name;
-                }
-              }).then(function(result) {
-                if (result.isConfirmed) {
-                  userName = result.value;
-                  localStorage.setItem("userName", userName);
-                }
-              });
-            }
-          }
-        }, 200);
-      } else {
-        const newSection = document.getElementById(sectionId);
-        newSection.classList.add("active-section", "animate__animated", "animate__fadeIn");
-        if (sectionId === "quran-section") showSurahMenu();
-        if (sectionId === "prayer-section") showPrayerTimes();
+      const loadingOverlay = document.getElementById("loading-overlay");
+      if(loadingOverlay) {
+        loadingOverlay.classList.add("hidden");
       }
     }
-    window.addEventListener("load", function() {
-      hideLoadingOverlay();
+    
+    function showLoadingOverlay() {
+      const loadingOverlay = document.getElementById("loading-overlay");
+      if(loadingOverlay) {
+        loadingOverlay.classList.remove("hidden");
+      }
+    }
+    
+    function showSection(sectionId, element) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active-section');
+      });
+      document.getElementById(sectionId).classList.add('active-section');
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      element.classList.add('active');
+    }
+    
+    function initAppOnLoad() {
       updateHijriDate();
       showSurahMenu();
-      showPrayerTimes();
-    });
-  </script>
-  <!-- كود إخفاء الهيدر عند التمرير -->
-  <script>
-    let prevScrollPos = window.pageYOffset;
-    window.addEventListener('scroll', function() {
-      const currentScrollPos = window.pageYOffset;
-      const header = document.getElementById('header');
-      if (prevScrollPos < currentScrollPos) {
-        header.style.top = '-60px';
-      } else {
-        header.style.top = '0';
-      }
-      prevScrollPos = currentScrollPos;
-    });
+    }
+    
+    window.addEventListener("load", initAppOnLoad);
   </script>
 </body>
 </html>
